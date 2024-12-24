@@ -1,0 +1,389 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+  
+model User {
+  id             String            @id @default(cuid())
+  name           String?
+  email          String            @unique
+  emailVerified  DateTime?
+  image          String?
+  role           Role              @default(USER)
+  preferences    Preferences?
+  accounts       Account[]
+  sessions       Session[]
+  authenticator  Authenticator[]
+  wallets        Wallet[]
+  transactions   Transaction[]
+  notifications  Notification[]
+  jobPosts       Job[]             @relation("CreatorJobs")
+  applications   Application[]
+  portfolio      Portfolio?
+  daoMemberships DaoMembership[]
+  votes          Vote[]
+  gamingStats    GamingStats[]
+  achievements   UserAchievement[]
+  badges         UserBadge[]
+  projects       Project[]         @relation("CreatorProjects")
+  connectJobs    ConnectJob[]      @relation("UserJobs")
+  createdGames   Game[]
+  leaderboards   Leaderboard[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  ConnectJob     ConnectJob[]
+  hasCompletedOnboarding Boolean? @default(false)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Authenticator {
+  id                   String  @id @default(cuid())
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, credentialID])
+}
+
+model Wallet {
+  id           String        @id @default(cuid())
+  userId       String
+  address      String        @unique
+  network      NetworkType   @default(SOLANA)
+  balance      Float         @default(0)
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Transaction {
+  id          String                  @id @default(cuid())
+  walletId    String
+  userId      String
+  type        TransactionType
+  amount      Float
+  recipient   String
+  status      TransactionStatus       @default(PENDING)
+  carbonScore TransactionCarbonScore?
+  wallet      Wallet                  @relation(fields: [walletId], references: [id])
+  user        User                    @relation(fields: [userId], references: [id])
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+}
+
+model Preferences {
+  id            String                @id @default(cuid())
+  userId        String                @unique
+  theme         String                @default("light")
+  notifications Boolean               @default(true)
+  frequency     NotificationFrequency @default(REALTIME)
+  user          User                  @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  content   String
+  read      Boolean          @default(false)
+  type      NotificationType
+  user      User             @relation(fields: [userId], references: [id])
+  createdAt DateTime         @default(now())
+}
+
+model ConnectJob {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  employerId      String
+  candidateId     String?
+  status          String   @default("open")
+  smartContractId String?
+  employer        User     @relation("UserJobs", fields: [employerId], references: [id])
+  candidate       User?    @relation(fields: [candidateId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Job {
+  id           String        @id @default(cuid())
+  creatorId    String
+  title        String
+  description  String
+  budget       Float
+  status       Status        @default(PENDING)
+  applications Application[]
+  creator      User          @relation("CreatorJobs", fields: [creatorId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  jobId       String
+  applicantId String
+  coverLetter String
+  status      Status   @default(PENDING)
+  job         Job      @relation(fields: [jobId], references: [id])
+  applicant   User     @relation(fields: [applicantId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Portfolio {
+  id          String @id @default(cuid())
+  userId      String @unique
+  description String
+  projects    Json
+  user        User   @relation(fields: [userId], references: [id])
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  creatorId     String
+  title         String
+  description   String
+  repositoryUrl String
+  tags          String[]
+  status        Status   @default(PENDING)
+  creator       User     @relation("CreatorProjects", fields: [creatorId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Dao {
+  id              String          @id @default(cuid())
+  name            String
+  description     String
+  treasuryBalance Float           @default(0.0)
+  proposals       Proposal[]
+  memberships     DaoMembership[]
+}
+
+model Proposal {
+  id          String   @id @default(cuid())
+  daoId       String
+  title       String
+  description String
+  voteCount   Int      @default(0)
+  dao         Dao      @relation(fields: [daoId], references: [id])
+  votes       Vote[]
+  createdAt   DateTime @default(now())
+}
+
+model Vote {
+  id         String   @id @default(cuid())
+  proposalId String
+  userId     String
+  decision   String
+  proposal   Proposal @relation(fields: [proposalId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model DaoMembership {
+  id       String   @id @default(cuid())
+  userId   String
+  daoId    String
+  role     String
+  user     User     @relation(fields: [userId], references: [id])
+  dao      Dao      @relation(fields: [daoId], references: [id])
+  joinedAt DateTime @default(now())
+}
+
+model GamingStats {
+  id           String            @id @default(cuid())
+  userId       String
+  gameId       String
+  score        Int
+  achievements UserAchievement[]
+  playTime     Int
+  lastPlayed   DateTime          @default(now())
+  user         User              @relation(fields: [userId], references: [id])
+  game         Game              @relation(fields: [gameId], references: [id])
+}
+
+model Game {
+  id                   String             @id @default(uuid())
+  name                 String
+  description          String
+  developerId          String?
+  developer            User?              @relation(fields: [developerId], references: [id])
+  categories           String[]
+  releaseDate          DateTime?
+  rating               Float              @default(0.0)
+  downloads            Int                @default(0)
+  achievements         Achievement[]
+  leaderboards         Leaderboard[]
+  stats                GamingStats[]
+  requirements         SystemRequirements @relation(fields: [systemRequirementsId], references: [id])
+  website              String?
+  trailerLink          String?
+  systemRequirementsId String             @unique
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model Leaderboard {
+  id        String   @id @default(uuid())
+  gameId    String
+  userId    String
+  game      Game     @relation(fields: [gameId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  score     Int      @default(0)
+  rank      Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Achievement {
+  id               String            @id @default(uuid())
+  name             String
+  description      String
+  criteria         Json
+  gameId           String
+  game             Game              @relation(fields: [gameId], references: [id])
+  points           Int               @default(0)
+  icon             String
+  type             AchievementType
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  userAchievements UserAchievement[]
+}
+
+model SystemRequirements {
+  id                 String   @id @default(uuid())
+  game               Game?
+  minOS              String
+  minCPU             String
+  minGPU             String
+  minRAM             Int
+  minStorage         Int
+  recommendedOS      String?
+  recommendedCPU     String?
+  recommendedGPU     String?
+  recommendedRAM     Int?
+  recommendedStorage Int?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model UserAchievement {
+  id            String       @id @default(cuid())
+  userId        String
+  achievementId String
+  progress      Float
+  earnedAt      DateTime     @default(now())
+  user          User         @relation(fields: [userId], references: [id])
+  achievement   Achievement  @relation(fields: [achievementId], references: [id])
+  gamingStats   GamingStats? @relation(fields: [gamingStatsId], references: [id])
+  gamingStatsId String?
+}
+
+model UserBadge {
+  id          String   @id @default(cuid())
+  userId      String
+  badgeName   String
+  description String
+  criteria    Json
+  icon        String
+  earnedAt    DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model TransactionCarbonScore {
+  id             String      @id @default(cuid())
+  transactionId  String      @unique
+  carbonEmission Float       @default(0.0)
+  transaction    Transaction @relation(fields: [transactionId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Status {
+  PENDING
+  ACTIVE
+  COMPLETED
+}
+
+enum NotificationFrequency {
+  REALTIME
+  DAILY
+  WEEKLY
+}
+
+enum NotificationType {
+  TRANSACTION
+  DAO_UPDATE
+  SYSTEM_ALERT
+}
+
+enum NetworkType {
+  SOLANA
+  ETHEREUM
+}
+
+enum TransactionType {
+  SEND
+  RECEIVE
+  STAKE
+  UNSTAKE
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum AchievementType {
+  GAMING
+  PLATFORM
+  DAO
+}
