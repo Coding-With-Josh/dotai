@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,73 +73,75 @@ export function LoginForm() {
     });
   }
   return (
-    <Card className="bg-black/40 backdrop-blur-lg">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl">Welcome Back</CardTitle>
-        <CardDescription>Login to access your account</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="grid grid-cols-2 gap-6">
-          <Button variant="outline" onClick={() => signIn("github")}>
-            <Icons.gitHub />
-            GitHub
-          </Button>
-          <Button variant="outline" onClick={() => signIn("google")}>
-            <Icons.google />
-            <span className="text-white font-bold text-lg">G</span>
-            Google
-          </Button>
-        </div>
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+    <Suspense fallback={<div>Loading...</div>}>
+      <Card className="bg-black/40 backdrop-blur-lg">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <CardDescription>Login to access your account</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid grid-cols-2 gap-6">
+            <Button variant="outline" onClick={() => signIn("github")}>
+              <Icons.gitHub />
+              GitHub
+            </Button>
+            <Button variant="outline" onClick={() => signIn("google")}>
+              <Icons.google />
+              <span className="text-white font-bold text-lg">G</span>
+              Google
+            </Button>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              Or continue with
-            </span>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="w-full">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-2/3 space-y-6"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="example@mail.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input placeholder="......" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div className="w-full">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="w-2/3 space-y-6"
+              >
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="example@mail.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input placeholder="......" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <Button type="submit" className="text-white w-full">
-                Login
-              </Button>
-            </form>
-          </Form>
-        </div>
-      </CardContent>
-    </Card>
+                <Button type="submit" className="text-white w-full">
+                  Login
+                </Button>
+              </form>
+            </Form>
+          </div>
+        </CardContent>
+      </Card>
+    </Suspense>
   );
 }
