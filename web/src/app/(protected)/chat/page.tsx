@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import ChatMessage from '@/components/ai/chat/chat-message'
-import VoiceInput from '@/components/ai/chat/voice-input'
+import {ChatMessage} from '@/components/ai/chat/chat-message'
+import {VoiceInput} from '@/components/ai/chat/voice-input'
 
 export default function ChatPage() {
   const [voiceMode, setVoiceMode] = useState(false)
