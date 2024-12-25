@@ -1,18 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useChat } from 'ai/react'
 import { Bot, Mic, Send } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {ChatMessage} from '@/components/ai/chat/chat-message'
-import {VoiceInput} from '@/components/ai/chat/voice-input'
+import { ChatMessage } from '@/components/ai/chat/chat-message'
+import { VoiceInput } from '@/components/ai/chat/voice-input'
+import { useRouter } from 'next/router'
+
+// Remove incorrect imports
+// import { OpenAIStream, StreamingTextResponse } from 'ai'
 
 export default function ChatPage() {
   const [voiceMode, setVoiceMode] = useState(false)
   const { messages, input, handleInputChange, handleSubmit } = useChat()
+  const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <div className="container flex h-[calc(100vh-3.5rem)] flex-col gap-4 p-4 md:p-8">
