@@ -1,50 +1,31 @@
-import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useSession } from "next-auth/react"
+'use client'
 
-export default async function AdminPage() {
-  const {data: session} = await useSession()
-  if (!session || session.user.role !== "ADMIN") {
-    redirect("/unauthorized")
+import React from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+
+export default function AdminPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  React.useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/api/auth/signin')
+    }
+  }, [status, router])
+
+  if (status === 'loading') {
+    return <div>Loading...</div>
   }
 
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-    },
-  })
-
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4 text-white">Admin Dashboard</h1>
-      <Card className="bg-dao-card">
-        <CardHeader>
-          <CardTitle className="text-white">User Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-dao-text">
-                <th className="p-2">Name</th>
-                <th className="p-2">Email</th>
-                <th className="p-2">Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-t border-dao-border">
-                  <td className="p-2 text-white">{user.name}</td>
-                  <td className="p-2 text-white">{user.email}</td>
-                  <td className="p-2 text-white">{user.role}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
+    <div className="container flex h-[calc(100vh-3.5rem)] flex-col gap-4 p-4 md:p-8">
+      <Card className="flex flex-1 flex-col">
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <p>Welcome, {session?.user?.name}</p>
+        <Button onClick={() => router.push('/admin/settings')}>Go to Settings</Button>
       </Card>
     </div>
   )
