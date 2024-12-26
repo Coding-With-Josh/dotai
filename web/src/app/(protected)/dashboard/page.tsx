@@ -9,9 +9,22 @@ import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react'
 import { BitcoinIcon, EthereumIcon, TetherIcon, PolygonIcon } from "@/components/dashboard/icons"
 import { ArrowUpRight, Download } from 'lucide-react'
 import { useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function Home() {
-  const {data: session} = useSession()
+  const { data: session } = useSession()
+  const [isMounted, setIsMounted] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
+    return null
+  }
+
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
