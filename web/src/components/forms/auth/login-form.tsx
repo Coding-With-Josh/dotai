@@ -64,14 +64,20 @@ export function LoginForm() {
       setError("Invalid email or password");
     }
     else {
-      const from = searchParams.get("from") || "/";
-      router.push(from);
+      // const from = searchParams.get("from") || "/";
+      // router.push(from);
+      router.push("/dashboard");
     }
 
     toast({
       title: "Logged in.",
     });
   }
+
+  async function handleGitHubSignIn() {
+    await signIn("github", { callbackUrl: '/api/auth/callback/github' })
+  }
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Card className="bg-black/40 backdrop-blur-lg">
@@ -81,7 +87,7 @@ export function LoginForm() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid grid-cols-2 gap-6">
-            <Button variant="outline" onClick={() => signIn("github")}>
+            <Button variant="outline" onClick={handleGitHubSignIn}>
               <Icons.gitHub />
               GitHub
             </Button>

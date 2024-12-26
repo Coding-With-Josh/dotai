@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
 import { ArrowUpRight, ArrowDownRight, DollarSign, Percent } from 'lucide-react'

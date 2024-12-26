@@ -1,5 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai-edge'
-import { OpenAIStream, StreamingTextResponse } from 'ai'
+// Remove incorrect imports
+// import { OpenAIStream, StreamingTextResponse } from 'ai'
 
 const config = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
@@ -26,7 +27,25 @@ export async function POST(req: Request) {
     ]
   })
 
-  const stream = OpenAIStream(response)
-  return new StreamingTextResponse(stream)
+  // Ensure reader is defined before reading from it
+  const reader = response.body?.getReader()
+  if (!reader) {
+    return new Response('Error: Unable to read response stream', { status: 500 })
+  }
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        controller.enqueue(value)
+      }
+      controller.close()
+    }
+  })
+
+  return new Response(stream, {
+    headers: { 'Content-Type': 'text/event-stream' }
+  })
 }
 

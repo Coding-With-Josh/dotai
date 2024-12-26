@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChatMessage } from '@/components/ai/chat/chat-message'
 import { VoiceInput } from '@/components/ai/chat/voice-input'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 // Remove incorrect imports
 // import { OpenAIStream, StreamingTextResponse } from 'ai'
